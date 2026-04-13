@@ -6,8 +6,7 @@ import {
 
 // --- FIREBASE IMPORTS ---
 import { collection, onSnapshot, addDoc, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
-import { signInWithRedirect, signOut, onAuthStateChanged } from 'firebase/auth';
-import { db, auth, provider } from './firebase'; 
+import { signInWithRedirect, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';import { db, auth, provider } from './firebase'; 
 
 /* ─── Design tokens ───────────────────────────────────────────────── */
 const C = {
@@ -83,11 +82,26 @@ export default function App() {
   const timerRef = useRef(null);
 
   // --- 1. AUTHENTICATION LISTENER ---
-  useEffect(() => {
+useEffect(() => {
+    // 1. First, check if we just came back from a Google Login redirect
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // User successfully returned from redirect
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("Redirect Error:", error);
+        // If it still says "missing initial state", we'll know here
+      });
+
+    // 2. Then, set up the normal listener
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
     });
+    
     return () => unsubscribe();
   }, []);
 
