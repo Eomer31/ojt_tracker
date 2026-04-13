@@ -6,7 +6,7 @@ import {
 
 // --- FIREBASE IMPORTS ---
 import { collection, onSnapshot, addDoc, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth, provider } from './firebase'; 
 
 /* ─── Design tokens ───────────────────────────────────────────────── */
@@ -135,9 +135,15 @@ export default function App() {
   const streak = calcStreak();
 
   // --- ACTIONS ---
-  const handleLogin = async () => {
-    try { await signInWithPopup(auth, provider); } 
-    catch (error) { console.error("Login failed:", error); }
+const handleLogin = async () => {
+    try { 
+      // Use Redirect instead of Popup for mobile compatibility!
+      await signInWithRedirect(auth, provider); 
+    } 
+    catch (error) { 
+      console.error("Login failed:", error); 
+      alert("Login Error: " + error.message); // This will show us if Firebase is mad!
+    }
   };
 
 const handleLogout = async () => {
